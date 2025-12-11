@@ -1,22 +1,27 @@
-[node]
-rpc_bind = "127.0.0.1:20443"
-p2p_bind = "127.0.0.1:20444"
-bootstrap_node = "048dd4f26101715853533dee005f091632957e8ea8612482c6b9c3d5cbf7d489e0b5e4d22b82b2ca4e0e5d8c8b8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8e8"
-working_dir = ".stacks-node/devnet"
+[network]
+name = "devnet"
+deployment_fee_rate = 10
 
-[burnchain]
-chain = "bitcoin"
-mode = "xenon"
-peer_host = "127.0.0.1"
-username = ""
-password = ""
-rpc_port = 18443
-peer_port = 18444
+[accounts.deployer]
+mnemonic = "twice kind fence tip hidden tilt action fragile skin nothing glory cousin green tomorrow spring wrist shed math olympic multiply hip blue scout claw"
+balance = 100_000_000_000_000
+sbtc_balance = 1_000_000_000
 
-[connection_options]
-read_only_call_limit_write_length = 0
-read_only_call_limit_read_length = 100000
-read_only_call_limit_write_count = 0
-read_only_call_limit_read_count = 10000
-read_only_call_limit_runtime = 1000000000
+[accounts.wallet_1]
+mnemonic = "sell invite acquire kitten bamboo drastic jelly vivid peace spawn twice guilt pave pen trash pretty park cube fragile unaware remain midnight betray rebuild"
+balance = 100_000_000_000_000
+sbtc_balance = 1_000_000_000
 
+[accounts.wallet_2]
+mnemonic = "hold excess usual excess ring elephant install account glad dry fragile donkey gaze humble truck breeze nation gasp vacuum limb head keep delay hospital"
+balance = 100_000_000_000_000
+sbtc_balance = 1_000_000_000
+
+[accounts.wallet_3]
+mnemonic = "cycle puppy glare enroll cost improve round trend wrist mushroom scorpion tower claim oppose clever elephant dinosaur eight problem before frozen dune wagon high"
+balance = 100_000_000_000_000
+sbtc_balance = 1_000_000_000
+
+[devnet]
+disable_stacks_explorer = false
+disable_stacks_api = false

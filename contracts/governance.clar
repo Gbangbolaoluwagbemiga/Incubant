@@ -178,14 +178,12 @@
 
 ;; Check if proposal passed
 (define-read-only (is-proposal-passed (proposal-id uint))
-    (let
-        (
-            (proposal (unwrap! (map-get? proposals { proposal-id: proposal-id }) ERR-PROPOSAL-NOT-FOUND))
-        )
-        (and
+    (match (map-get? proposals { proposal-id: proposal-id })
+        proposal (and
             (is-eq (get status proposal) u1)
             (>= (get yes-votes proposal) (get no-votes proposal))
         )
+        false
     )
 )
 
