@@ -19,8 +19,8 @@ import {
   getAddressFromPrivateKey,
 } from "@stacks/transactions";
 import { fetchAccount } from "@stacks/network";
-import { generateWallet, restoreWalletAccounts } from "@stacks/wallet-sdk";
 import * as bip39 from "bip39";
+import * as hdkey from "hdkey";
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
@@ -81,7 +81,7 @@ async function deployContract(
   return { txId, contractAddress };
 }
 
-async function derivePrivateKeyFromMnemonic(mnemonic: string): Promise<string> {
+function derivePrivateKeyFromMnemonic(mnemonic: string): string {
   // Validate mnemonic
   const trimmedMnemonic = mnemonic.trim();
   if (!bip39.validateMnemonic(trimmedMnemonic)) {
@@ -89,23 +89,26 @@ async function derivePrivateKeyFromMnemonic(mnemonic: string): Promise<string> {
   }
 
   try {
-    // Restore wallet from mnemonic
-    const wallet = await restoreWalletAccounts({
-      mnemonic: trimmedMnemonic,
-      password: "",
-    });
-
-    // Get the first account's private key
-    if (!wallet || !wallet.accounts || wallet.accounts.length === 0) {
-      throw new Error("Failed to derive account from mnemonic - no accounts found");
-    }
-
-    const privateKey = wallet.accounts[0].stxPrivateKey;
-    if (!privateKey) {
-      throw new Error("Failed to get private key from account");
-    }
-
-    return privateKey;
+    // Convert mnemonic to seed
+    const seed = bip39.mnemonicToSeedSync(trimmedMnemonic);
+    
+    // Derive master key
+    const root = hdkey.fromMasterSeed(seed);
+    
+    // Stacks uses BIP44 path: m/44'/5757'/0'/0/0
+    // 44' = BIP44 purpose
+    // 5757' = Stacks coin type
+    // 0' = account index
+    // 0 = change (external)
+    // 0 = address index
+    const derived = root.derive("m/44'/5757'/0'/0/0");
+    
+    // Get private key (32 bytes = 64 hex chars)
+    const privateKeyBytes = derived.privateKey;
+    const privateKeyHex = Buffer.from(privateKeyBytes).toString('hex');
+    
+    // Stacks private keys need '01' suffix
+    return privateKeyHex + '01';
   } catch (error: any) {
     throw new Error(`Failed to derive private key: ${error.message}`);
   }
@@ -132,7 +135,7 @@ async function main() {
   if (isMnemonic) {
     console.log("🔑 Detected mnemonic phrase, deriving private key...");
     try {
-      deployerKey = await derivePrivateKeyFromMnemonic(deployerKeyOrMnemonic);
+      deployerKey = derivePrivateKeyFromMnemonic(deployerKeyOrMnemonic);
       console.log("✅ Successfully derived private key from mnemonic\n");
     } catch (error: any) {
       console.error("❌ Failed to derive private key from mnemonic:", error.message);
