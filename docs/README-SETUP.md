@@ -2,36 +2,67 @@
 
 ## Prerequisites
 
-- Node.js 18+ and npm
-- [Clarinet](https://docs.hiro.so/clarinet) installed
-- Stacks CLI (optional, for advanced operations)
+- **Node.js** 18+ and npm
+- [**Clarinet**](https://docs.hiro.so/clarinet) installed
+- **Stacks CLI** (optional, for advanced operations)
+- **Git** for version control
 
-## Initial Setup
+## Installation
 
-1. **Install Dependencies**
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/Incubant.git
+cd Incubant
+```
+
+### 2. Install Root Dependencies
+
    ```bash
    npm install
    ```
 
-2. **Set Up Environment Variables**
+This installs:
+- Clarinet SDK for testing
+- TypeScript and build tools
+- Deployment scripts dependencies
+
+### 3. Install Frontend Dependencies
+
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+### 4. Set Up Environment Variables
+
    ```bash
    cp env.template .env
    ```
    
-   Then edit `.env` and fill in:
-   - `DEPLOYER_SECRET_KEY`: Your deployer account secret key (get from `clarinet accounts`)
-   - Other optional variables as needed
+Edit `.env` and fill in:
+- `DEPLOYER_SECRET_KEY`: Your deployer account secret key
+- `STACKS_NETWORK`: Network (mainnet, testnet, or devnet)
 
-3. **Verify Contracts**
+For frontend, create `frontend/.env.local`:
+```env
+NEXT_PUBLIC_STACKS_NETWORK=mainnet
+```
+
+## Development
+
+### Smart Contracts
+
+#### Check Contract Syntax
+
    ```bash
    npm run check
    # or
    clarinet check
    ```
 
-## Development
-
-### Testing Contracts
+#### Run Tests
 
 ```bash
 # Run all tests
@@ -44,7 +75,7 @@ npm run test:watch
 npm run test:coverage
 ```
 
-### Interactive Console
+#### Interactive Console
 
 ```bash
 npm run console
@@ -52,7 +83,7 @@ npm run console
 clarinet console
 ```
 
-### Deploy to Devnet
+#### Deploy to Devnet
 
 ```bash
 # Start local devnet
@@ -64,15 +95,70 @@ npm run deploy:devnet
 clarinet deploy --devnet
 ```
 
-## Contract Addresses
+### Frontend
 
-After deployment, update your `.env` file with the deployed contract addresses:
+#### Start Development Server
 
-```env
-INCUBATION_CONTRACT_ADDRESS=ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.incubation
-EQUITY_TOKEN_CONTRACT_ADDRESS=ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.equity-token
-# ... etc
+```bash
+cd frontend
+npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+#### Build for Production
+
+```bash
+cd frontend
+npm run build
+npm start
+```
+
+#### Lint Code
+
+```bash
+cd frontend
+npm run lint
+```
+
+## Deployment
+
+### Deploy to Testnet
+
+1. Update `.env` with testnet configuration
+2. Get testnet STX from faucet
+3. Run deployment:
+   ```bash
+   npm run deploy:testnet
+   ```
+
+### Deploy to Mainnet
+
+⚠️ **Warning**: Mainnet deployment requires real STX and is irreversible.
+
+1. Ensure `.env` has mainnet configuration
+2. Verify you have sufficient STX for deployment
+3. Run deployment:
+   ```bash
+   npm run deploy:mainnet
+   ```
+
+After deployment, update `frontend/lib/contracts.ts` with the new contract addresses.
+
+## Getting Deployer Secret Key
+
+### Using Clarinet
+
+```bash
+clarinet accounts
+```
+
+This shows all accounts with their secret keys. Use the deployer account's secret key.
+
+### Using Stacks Wallet
+
+1. Export your wallet's private key
+2. Use the private key (64 hex characters) or mnemonic phrase
 
 ## Project Structure
 
@@ -85,30 +171,53 @@ EQUITY_TOKEN_CONTRACT_ADDRESS=ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM.equity-t
 │   ├── governance.clar
 │   ├── mentorship.clar
 │   └── staking.clar
-├── tests/             # TypeScript test files
-├── scripts/           # Deployment and utility scripts
-├── settings/          # Clarinet network configurations
-├── .env              # Environment variables (gitignored)
-├── env.template      # Environment template
-└── Clarinet.toml     # Clarinet project configuration
+├── frontend/           # Next.js frontend application
+├── scripts/            # Deployment and utility scripts
+├── tests/              # TypeScript test files
+├── settings/           # Clarinet network configurations
+├── docs/               # Documentation
+├── .env               # Environment variables (gitignored)
+├── env.template       # Environment template
+└── Clarinet.toml      # Clarinet project configuration
 ```
 
-## Getting Deployer Secret Key
+## Troubleshooting
 
-To get your deployer account secret key:
+### Contract Check Fails
 
+- Ensure Clarinet is installed: `clarinet --version`
+- Check contract syntax: `clarinet check`
+- Review error messages for specific issues
+
+### Frontend Won't Start
+
+- Ensure Node.js 18+ is installed: `node --version`
+- Clear node_modules and reinstall:
 ```bash
-clarinet accounts
-```
+  rm -rf node_modules frontend/node_modules
+  npm install
+  cd frontend && npm install
+  ```
 
-This will show all accounts with their secret keys. Use the deployer account's secret key in your `.env` file.
+### Deployment Fails
+
+- Verify `.env` file exists and has correct values
+- Check you have sufficient STX for deployment
+- Ensure network is correct (mainnet/testnet)
+- Check nonce issues (script handles this automatically)
+
+### Wallet Connection Issues
+
+- Ensure Stacks Wallet extension is installed
+- Check network matches (mainnet/testnet)
+- Clear browser cache and reload
 
 ## Next Steps
 
-1. Write tests for all contracts
-2. Deploy to testnet for testing
-3. Build frontend integration
-4. Deploy to mainnet (when ready)
+1. **Write Tests**: Add tests for all contract functions
+2. **Deploy to Testnet**: Test on testnet before mainnet
+3. **Build Frontend**: Create additional UI components
+4. **Integration**: Connect frontend to deployed contracts
 
 ## Resources
 
@@ -116,5 +225,10 @@ This will show all accounts with their secret keys. Use the deployer account's s
 - [Clarinet Docs](https://docs.hiro.so/clarinet)
 - [Stacks.js Docs](https://stacks.js.org/)
 - [Stacks Connect](https://github.com/stacks/connect)
+- [Next.js Docs](https://nextjs.org/docs)
 
+## Support
 
+- Open an issue on GitHub
+- Check existing documentation in `docs/`
+- Review [Contributing Guide](../CONTRIBUTING.md)
