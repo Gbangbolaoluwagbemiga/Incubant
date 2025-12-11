@@ -17,8 +17,8 @@ import {
   TxBroadcastResultOk,
   TxBroadcastResultRejected,
   getAddressFromPrivateKey,
-  getNonce,
 } from "@stacks/transactions";
+import { fetchAccount } from "@stacks/network";
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
@@ -57,7 +57,7 @@ async function deployContract(
     anchorMode: AnchorMode.Any,
     postConditionMode: PostConditionMode.Allow,
     fee,
-    nonce,
+    nonce: Number(nonce),
   });
 
   console.log(`📤 Broadcasting ${contractName} (nonce: ${nonce})...`);
@@ -111,7 +111,8 @@ async function main() {
   console.log(`   Contracts to deploy: ${CONTRACTS.length}\n`);
 
   // Get initial nonce
-  let currentNonce = await getNonce(deployerAddress, network);
+  const account = await fetchAccount({ network, address: deployerAddress });
+  let currentNonce = BigInt(account.nonce);
   console.log(`📊 Starting nonce: ${currentNonce}\n`);
 
   const deployedContracts: Record<string, { txId: string; address: string }> = {};
