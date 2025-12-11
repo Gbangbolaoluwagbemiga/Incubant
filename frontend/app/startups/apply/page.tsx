@@ -46,16 +46,27 @@ export default function ApplyPage() {
         network: 'mainnet', // Contracts are deployed on mainnet
       });
 
-      if (response) {
-        console.log("Transaction submitted:", response);
-        alert("Application submitted! Check the explorer for transaction status.");
-        setFormData({ name: "", description: "", proposal: "" });
-      }
-    } catch (error) {
-      console.error("Error submitting application:", error);
-      alert("Failed to submit application. Please try again.");
-    } finally {
+      console.log("Transaction submitted:", response);
+      
+      // Reset form and loading state
+      setFormData({ name: "", description: "", proposal: "" });
       setLoading(false);
+      
+      // Show success message with transaction link
+      const explorerUrl = `https://explorer.stacks.co/txid/${response.txid}`;
+      alert(`Application submitted successfully!\n\nTransaction ID: ${response.txid}\n\nView on explorer: ${explorerUrl}`);
+      
+    } catch (error: any) {
+      console.error("Error submitting application:", error);
+      setLoading(false);
+      
+      // Show user-friendly error message
+      const errorMessage = error?.message || error?.toString() || "Unknown error occurred";
+      if (errorMessage.includes("rejected")) {
+        alert("Transaction was cancelled. Please try again when ready.");
+      } else {
+        alert(`Failed to submit application: ${errorMessage}`);
+      }
     }
   };
 
@@ -74,14 +85,14 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header />
       <main className="container mx-auto px-4 py-16 max-w-3xl">
-        <h1 className="text-4xl font-bold mb-8">Apply for Incubation</h1>
+        <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-white">Apply for Incubation</h1>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-lg p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 space-y-6 transition-colors">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Startup Name *
             </label>
             <input
@@ -90,14 +101,14 @@ export default function ApplyPage() {
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700 transition-colors"
               placeholder="My Awesome Startup"
               maxLength={100}
             />
           </div>
 
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Description *
             </label>
             <textarea
@@ -105,7 +116,7 @@ export default function ApplyPage() {
               required
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700 transition-colors"
               rows={4}
               placeholder="A brief description of your startup..."
               maxLength={500}
@@ -113,7 +124,7 @@ export default function ApplyPage() {
           </div>
 
           <div>
-            <label htmlFor="proposal" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="proposal" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Detailed Proposal *
             </label>
             <textarea
@@ -121,7 +132,7 @@ export default function ApplyPage() {
               required
               value={formData.proposal}
               onChange={(e) => setFormData({ ...formData, proposal: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 bg-white"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 dark:text-white bg-white dark:bg-gray-700 transition-colors"
               rows={8}
               placeholder="Describe your startup idea, milestones, funding needs, and how you plan to use the funds..."
               maxLength={1000}
@@ -131,15 +142,15 @@ export default function ApplyPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="w-full px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? "Submitting..." : "Submit Application"}
           </button>
         </form>
 
-        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-          <h2 className="text-lg font-semibold mb-2">What happens next?</h2>
-          <ol className="list-decimal list-inside space-y-2 text-gray-700">
+        <div className="mt-8 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6 transition-colors">
+          <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">What happens next?</h2>
+          <ol className="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
             <li>Your application will be submitted on-chain</li>
             <li>The community will review and vote on your proposal</li>
             <li>If approved, you can create milestones and start receiving funding</li>
