@@ -3,7 +3,7 @@
  */
 
 import {
-  callReadOnlyFunction,
+  fetchCallReadOnlyFunction,
   uintCV,
   principalCV,
   cvToJSON,
@@ -31,7 +31,7 @@ export async function callReadOnly(
   const { contractAddress: address, contractName: name } = parseContractAddress(contractAddress);
   
   try {
-    const result = await callReadOnlyFunction({
+    const result = await fetchCallReadOnlyFunction({
       network,
       contractAddress: address,
       contractName: name,

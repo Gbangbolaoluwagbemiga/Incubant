@@ -2,7 +2,7 @@
  * Stacks network configuration
  */
 
-import { StacksNetworks } from "@stacks/network";
+import { STACKS_MAINNET, STACKS_TESTNET } from "@stacks/network";
 
 export const APP_NAME = "Incubant";
 export const APP_ICON = "/icon.png";
@@ -11,8 +11,8 @@ export const APP_ICON = "/icon.png";
 export const isMainnet = process.env.NEXT_PUBLIC_STACKS_NETWORK === "mainnet";
 
 export const network = isMainnet
-  ? StacksNetworks.MAINNET
-  : StacksNetworks.TESTNET;
+  ? STACKS_MAINNET
+  : STACKS_TESTNET;
 
 export const EXPLORER_URL = isMainnet
   ? "https://explorer.stacks.co"
