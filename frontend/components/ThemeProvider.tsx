@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from "react";
 
 type Theme = "light" | "dark";
 
@@ -15,8 +15,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Initialize theme from localStorage or system preference
   const getInitialTheme = (): Theme => {
     if (typeof window === "undefined") return "light";
-    const savedTheme = localStorage.getItem("theme") as Theme;
-    if (savedTheme) return savedTheme;
+    try {
+      const savedTheme = localStorage.getItem("theme") as Theme;
+      if (savedTheme === "light" || savedTheme === "dark") {
+        return savedTheme;
+      }
+    } catch (e) {
+      // localStorage might not be available
+    }
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     return prefersDark ? "dark" : "light";
   };
@@ -24,29 +30,51 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    // Apply theme on mount
-    applyTheme(theme);
-  }, [theme]);
-
-  const applyTheme = (newTheme: Theme) => {
+  const applyTheme = useCallback((newTheme: Theme) => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
+    // Always remove first, then add if needed
+    root.classList.remove("dark");
     if (newTheme === "dark") {
       root.classList.add("dark");
-    } else {
-      root.classList.remove("dark");
     }
-  };
+  }, []);
 
-  const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    if (typeof window !== "undefined") {
-      localStorage.setItem("theme", newTheme);
+  useEffect(() => {
+    setMounted(true);
+    // Apply theme on mount based on current state
+    applyTheme(theme);
+  }, [applyTheme, theme]);
+
+  useEffect(() => {
+    // Apply theme whenever it changes after mount
+    if (mounted) {
+      applyTheme(theme);
     }
-  };
+  }, [theme, mounted, applyTheme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((currentTheme) => {
+      const newTheme = currentTheme === "light" ? "dark" : "light";
+      // Save to localStorage
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("theme", newTheme);
+        } catch (e) {
+          // localStorage might not be available
+        }
+      }
+      // Apply theme immediately
+      if (typeof document !== "undefined") {
+        const root = document.documentElement;
+        root.classList.remove("dark");
+        if (newTheme === "dark") {
+          root.classList.add("dark");
+        }
+      }
+      return newTheme;
+    });
+  }, []);
 
   // Always provide the context, even before mount
   // This prevents the "must be used within ThemeProvider" error
