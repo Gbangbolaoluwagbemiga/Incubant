@@ -19,6 +19,8 @@ import {
   getAddressFromPrivateKey,
 } from "@stacks/transactions";
 import { fetchAccount } from "@stacks/network";
+import { generateWallet, restoreWalletAccounts } from "@stacks/wallet-sdk";
+import * as bip39 from "bip39";
 import * as fs from "fs";
 import * as path from "path";
 import * as dotenv from "dotenv";
@@ -79,38 +81,89 @@ async function deployContract(
   return { txId, contractAddress };
 }
 
+async function derivePrivateKeyFromMnemonic(mnemonic: string): Promise<string> {
+  // Validate mnemonic
+  const trimmedMnemonic = mnemonic.trim();
+  if (!bip39.validateMnemonic(trimmedMnemonic)) {
+    throw new Error("Invalid mnemonic phrase");
+  }
+
+  try {
+    // Restore wallet from mnemonic
+    const wallet = await restoreWalletAccounts({
+      mnemonic: trimmedMnemonic,
+      password: "",
+    });
+
+    // Get the first account's private key
+    if (!wallet || !wallet.accounts || wallet.accounts.length === 0) {
+      throw new Error("Failed to derive account from mnemonic - no accounts found");
+    }
+
+    const privateKey = wallet.accounts[0].stxPrivateKey;
+    if (!privateKey) {
+      throw new Error("Failed to get private key from account");
+    }
+
+    return privateKey;
+  } catch (error: any) {
+    throw new Error(`Failed to derive private key: ${error.message}`);
+  }
+}
+
 async function main() {
   const networkType = process.env.STACKS_NETWORK || "devnet";
-  let deployerKey = process.env.DEPLOYER_SECRET_KEY;
+  let deployerKeyOrMnemonic = process.env.DEPLOYER_SECRET_KEY || process.env.DEPLOYER_MNEMONIC;
 
-  if (!deployerKey) {
-    console.error("❌ DEPLOYER_SECRET_KEY not found in .env file");
+  if (!deployerKeyOrMnemonic) {
+    console.error("❌ DEPLOYER_SECRET_KEY or DEPLOYER_MNEMONIC not found in .env file");
     process.exit(1);
   }
 
-  // Trim whitespace and remove any quotes
-  deployerKey = deployerKey.trim().replace(/^["']|["']$/g, '');
+  // Trim whitespace and remove any quotes, newlines, etc.
+  deployerKeyOrMnemonic = deployerKeyOrMnemonic.trim().replace(/^["']|["']$/g, '');
   
-  // Remove '0x' prefix if present
-  if (deployerKey.startsWith('0x')) {
-    deployerKey = deployerKey.slice(2);
-  }
+  let deployerKey: string;
   
-  // Validate secret key format (should be 64 or 66 hex characters)
-  const isValidFormat = /^[0-9a-fA-F]{64}(01)?$/.test(deployerKey);
+  // Check if it's a mnemonic (multiple words or long string)
+  const wordCount = deployerKeyOrMnemonic.split(/\s+/).filter(w => w.length > 0).length;
+  const isMnemonic = wordCount >= 12 || deployerKeyOrMnemonic.length > 100;
   
-  if (!isValidFormat) {
-    console.error("❌ Invalid DEPLOYER_SECRET_KEY format");
-    console.error(`   Received length: ${deployerKey.length} characters`);
-    console.error("   Secret key should be 64 hex characters, optionally followed by '01'");
-    console.error("   Example: 753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601");
-    console.error("   Or: 753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a6 (without 01 suffix)");
-    process.exit(1);
-  }
+  if (isMnemonic) {
+    console.log("🔑 Detected mnemonic phrase, deriving private key...");
+    try {
+      deployerKey = await derivePrivateKeyFromMnemonic(deployerKeyOrMnemonic);
+      console.log("✅ Successfully derived private key from mnemonic\n");
+    } catch (error: any) {
+      console.error("❌ Failed to derive private key from mnemonic:", error.message);
+      console.error("   Please check that your mnemonic phrase is correct (12 or 24 words)");
+      process.exit(1);
+    }
+  } else {
+    // It's a private key
+    deployerKey = deployerKeyOrMnemonic.replace(/\s+/g, '');
+    
+    // Remove '0x' prefix if present
+    if (deployerKey.startsWith('0x')) {
+      deployerKey = deployerKey.slice(2);
+    }
+    
+    // Validate secret key format (should be 64 or 66 hex characters)
+    const isValidFormat = /^[0-9a-fA-F]{64}(01)?$/.test(deployerKey);
+    
+    if (!isValidFormat) {
+      console.error("❌ Invalid DEPLOYER_SECRET_KEY format");
+      console.error(`   Received length: ${deployerKey.length} characters`);
+      console.error("   Secret key should be 64 hex characters, optionally followed by '01'");
+      console.error("   Total length should be 64 or 66 characters");
+      console.error("   Example: 753b7cc01a1a2e86221266a154af739463fce51219d97e4f856cd7200c3bd2a601");
+      process.exit(1);
+    }
 
-  // Ensure it ends with '01' if not already
-  if (deployerKey.length === 64) {
-    deployerKey = deployerKey + "01";
+    // Ensure it ends with '01' if not already
+    if (deployerKey.length === 64) {
+      deployerKey = deployerKey + "01";
+    }
   }
 
   let network: StacksTestnet | StacksMainnet | StacksDevnet;

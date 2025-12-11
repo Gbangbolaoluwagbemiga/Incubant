@@ -26,8 +26,8 @@
   "license": "MIT",
   "devDependencies": {
     "@hirosystems/clarinet-sdk": "^2.0.0",
-    "@stacks/transactions": "^6.0.0",
     "@stacks/network": "^6.0.0",
+    "@stacks/transactions": "^6.0.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -40,7 +40,8 @@
   "dependencies": {
     "@stacks/connect": "^7.0.0",
     "@stacks/connect-react": "^7.0.0",
+    "@stacks/wallet-sdk": "^7.2.0",
+    "bip39": "^3.1.0",
     "dotenv": "^16.0.0"
   }
 }
-
