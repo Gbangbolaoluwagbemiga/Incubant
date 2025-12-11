@@ -52,16 +52,16 @@ export default function StakingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Header />
       <main className="container mx-auto px-4 py-16 max-w-3xl">
-        <h1 className="text-4xl font-bold mb-8">Staking</h1>
+        <h1 className="text-4xl font-bold mb-8 text-gray-900 dark:text-white">Staking</h1>
 
-        <div className="bg-white rounded-lg shadow-lg p-8 mb-8">
-          <h2 className="text-2xl font-semibold mb-6">Stake Tokens</h2>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 mb-8 transition-colors">
+          <h2 className="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">Stake Tokens</h2>
           
           {!isSignedIn ? (
-            <div className="text-center py-8 text-gray-600">
+            <div className="text-center py-8 text-gray-600 dark:text-gray-400">
               <p>Please connect your wallet to stake tokens.</p>
             </div>
           ) : (
