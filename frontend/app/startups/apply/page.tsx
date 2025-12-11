@@ -32,11 +32,18 @@ export default function ApplyPage() {
         stringUtf8CV(formData.proposal),
       ];
 
+      console.log('Calling contract:', {
+        contract: CONTRACT_ADDRESSES.INCUBATION,
+        functionName: "apply-for-incubation",
+        functionArgs,
+        network: 'mainnet'
+      });
+
       const response = await request('stx_callContract', {
         contract: CONTRACT_ADDRESSES.INCUBATION,
         functionName: "apply-for-incubation",
         functionArgs,
-        network: isMainnet ? 'mainnet' : 'testnet',
+        network: 'mainnet', // Contracts are deployed on mainnet
       });
 
       if (response) {

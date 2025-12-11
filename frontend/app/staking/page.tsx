@@ -34,7 +34,7 @@ export default function StakingPage() {
           uintCV(parseInt(startupId)),
           uintCV(parseInt(amount) * 1e6), // Convert to micro-STX
         ],
-        network: isMainnet ? 'mainnet' : 'testnet',
+        network: 'mainnet', // Contracts are deployed on mainnet
       });
 
       if (response) {

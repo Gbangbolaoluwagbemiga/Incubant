@@ -39,7 +39,7 @@ export default function GovernancePage() {
           uintCV(voteChoice), // 0 = no, 1 = yes
           uintCV(votingPower),
         ],
-        network: isMainnet ? 'mainnet' : 'testnet',
+        network: 'mainnet', // Contracts are deployed on mainnet
       });
 
       if (response) {
