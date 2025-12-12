@@ -20,19 +20,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const applyTheme = useCallback((newTheme: Theme) => {
     if (typeof document === "undefined") return;
     const root = document.documentElement;
-    const body = document.body;
     
-    // Always remove first, then add if needed
+    // Remove dark class first
     root.classList.remove("dark");
-    body.classList.remove("dark");
     
+    // Add dark class only if theme is dark
     if (newTheme === "dark") {
       root.classList.add("dark");
-      body.classList.add("dark");
-    } else {
-      // Explicitly ensure dark is removed for light theme
-      root.classList.remove("dark");
-      body.classList.remove("dark");
     }
   }, []);
 
